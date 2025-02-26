@@ -1,14 +1,19 @@
 name: Publish
 
 on:
+  push:
+    branches:
+      - main
   workflow_run:
-    workflows: ["Test"]  # Name of the test workflow
+    workflows: ["Test"]
     types:
       - completed
 
 jobs:
   publish_jsr:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Ensure the test run was successful
+    if: |
+      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' ||
+      github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,6 +23,9 @@ jobs:
       - run: npx jsr publish
 
   publish_npm:
+    if: |
+      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' ||
+      github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
