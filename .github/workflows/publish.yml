@@ -39,7 +39,7 @@ jobs:
 
       - name: Check if version exists on NPM
         run: |
-          npm show functional-typescript@${{ steps.version.outputs.version }} > /dev/null 2>&1 || echo "Version does not exist, ready to publish."
+          npm show func-typescript@${{ steps.version.outputs.version }} > /dev/null 2>&1 || echo "Version does not exist, ready to publish."
 
       - name: Publish to NPM
         run: npm publish --access public
