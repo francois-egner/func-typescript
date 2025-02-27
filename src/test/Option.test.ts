@@ -44,7 +44,7 @@ describe("Option", () => {
     describe("Option.peek", () => {
         test("Option.peek with no value", async () => {
             var v = 3;
-            const option = Option.of(null).peek((value)=> {v = 4});
+            const option = Option.of(null).peek((_)=> {v = 4});
             await option.run();
             expect(v).toBe(3);
         })
@@ -120,7 +120,7 @@ describe("Option", () => {
 
     describe("Option.map", () => {
         test("Option.map with no value", async () => {
-            const option = Option.of(null).map((value) => "test");
+            const option = Option.of(null).map((_) => "test");
             await expect(option.get()).rejects.toThrow("No value present");
         })
 
@@ -132,7 +132,7 @@ describe("Option", () => {
 
     describe("Option.mapTry", () => {
         test("Option.mapTry with no value", async () => {
-            const t = Option.of(null).mapTry((value) => "test");
+            const t = Option.of(null).mapTry((_) => "test");
             await expect(t.get()).rejects.toThrow("No value present");
         })
 
@@ -147,7 +147,7 @@ describe("Option", () => {
 
     describe("Option.flatMap", () => {
         test("Option.flatMap with no value", async () => {
-            const option = Option.of(null).flatMap((value) => Option.of("test"));
+            const option = Option.of(null).flatMap((_) => Option.of("test"));
             await expect(option.get()).rejects.toThrow("No value present");
         })
 
