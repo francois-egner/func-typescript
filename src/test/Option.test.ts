@@ -1,4 +1,4 @@
-import { Option } from "../"
+import {Option, Try} from "../"
 
 
 describe("Option", () => {
@@ -129,6 +129,21 @@ describe("Option", () => {
             await expect(option.get()).resolves.toBe("123test");
         })
     })
+
+    describe("Option.mapTry", () => {
+        test("Option.mapTry with no value", async () => {
+            const t = Option.of(null).mapTry((value) => "test");
+            await expect(t.get()).rejects.toThrow("No value present");
+        })
+
+        test("Option.map with value", async () => {
+            const t = Option.of(123).mapTry((value) => value + "test");
+            expect(t).toBeInstanceOf(Try);
+            await expect(t.get()).resolves.toBe("123test");
+        })
+    })
+
+
 
     describe("Option.flatMap", () => {
         test("Option.flatMap with no value", async () => {

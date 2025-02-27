@@ -7,6 +7,7 @@ import {peek} from "./functions/option/peek";
 import { filter } from "./functions/option/filter";
 import { map } from "./functions/option/map";
 import { flatMap } from "./functions/option/flatMap";
+import {Try} from "./Try";
 
 export type Nullable = null | undefined;
 export type OptionStep = ((() => Promise<any>) | ((prev: any) => Promise<any>))
@@ -55,9 +56,17 @@ export class Option<T> {
     public map<U>(mapper: (value: T) => Promise<U> | U): Option<U | Nullable> {
         return new Option([... this.$internal.steps, (prev: Result)=> map(prev, mapper)]);
     }
+    public mapTry<U>(mapper: (value: T) => Promise<U> | U): Try<U>{
+        return Try.of(async ()=> {
+            const result = await this.get();
+            return mapper(result);
+        })
+    }
     public flatMap<U>(mapper: (value: T) => Promise<Option<U | Nullable>> | Option<U | Nullable>): Option<U | Nullable> {
         return new Option([... this.$internal.steps, (prev: Result)=> flatMap(prev, mapper)]);
     }
+
+
 
     public async fold<U>(ifNone: () => Promise<U> | U, mapper: (value: T) => Promise<U> | U) : Promise<U>{
         // @ts-ignore
