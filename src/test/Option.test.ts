@@ -41,6 +41,22 @@ describe("Option", () => {
         })
     })
 
+    describe("Option.peek", () => {
+        test("Option.peek with no value", async () => {
+            var v = 3;
+            const option = Option.of(null).peek((value)=> {v = 4});
+            await option.run();
+            expect(v).toBe(3);
+        })
+
+        test("Option.peek with value", async () => {
+            var v = 3;
+            const option = Option.of(23).peek((value)=> {v = value});
+            await option.run();
+            expect(v).toBe(23);
+        })
+    })
+
     describe("Option.isEmpty", ()=> {
         test("Option.isEmpty should return false", async () => {
             const option = Option.of("test");
@@ -85,6 +101,47 @@ describe("Option", () => {
         });
     })
 
+    describe("Option.filter", () => {
+        test("Option.filter with no value", async () => {
+            const option = Option.of(null).filter((value)=> value == "test");
+            await expect(option.get()).rejects.toThrow("No value present");
+        })
+
+        test("Option.filter with non matching value", async () => {
+            const option = Option.of(123).filter((value)=> value == 123);
+            await expect(option.get()).rejects.toThrow("No value present");
+        })
+
+        test("Option.filter with matching value", async () => {
+            const option = Option.of(123).filter((value)=> value == 125);
+            await expect(option.get()).resolves.toBe(123);
+        })
+    })
+
+    describe("Option.map", () => {
+        test("Option.map with no value", async () => {
+            const option = Option.of(null).map((value) => "test");
+            await expect(option.get()).rejects.toThrow("No value present");
+        })
+
+        test("Option.map with value", async () => {
+            const option = Option.of(123).map((value) => value + "test");
+            await expect(option.get()).resolves.toBe("123test");
+        })
+    })
+
+    describe("Option.flatMap", () => {
+        test("Option.flatMap with no value", async () => {
+            const option = Option.of(null).flatMap((value) => Option.of("test"));
+            await expect(option.get()).rejects.toThrow("No value present");
+        })
+
+        test("Option.flatMap with value", async () => {
+            const option = Option.of(123).flatMap((value) => Option.of(value + "test"));
+            await expect(option.get()).resolves.toBe("123test");
+        })
+    })
+
     describe("Option.getOrElse", () => {
         test("Option.getOrElse with provided value", async () => {
             const option = Option.of(null);
@@ -107,6 +164,28 @@ describe("Option", () => {
         test("Option.getOrElseThrow should not throw on non empty Option and return value", async () => {
             const option = Option.of(123);
             await expect(option.getOrElseThrow(()=> Error("Throwing"))).resolves.toBe(123);
+        })
+    })
+
+    describe("Option.fold", () => {
+        test("Option.fold with provided value", async () => {
+            const option = Option.of(null);
+            await expect(option.fold(()=> "test", (v)=> v)).resolves.toBe("test");
+        })
+
+        test("Option.fold with provided provider", async () => {
+            const option = Option.of(123);
+            await expect(option.fold(()=> "test", (v)=> "test" + v)).resolves.toBe("test123");
+        })
+    })
+
+    describe("Option.transform", () => {
+        test("Option.transform with provided value", async () => {
+            const option = Option.of(null);
+            await expect(option.transform(async (opt)=> {
+                await opt.run()
+                if (opt.isEmpty()) return "empty"
+            })).resolves.toBe("empty");
         })
     })
 
