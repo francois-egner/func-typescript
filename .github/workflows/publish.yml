@@ -46,8 +46,9 @@ jobs:
       - name: Build the project
         run: npm run build
 
-      - name: Verify package name
-        run: echo "Package name: $(jq -r .name package.json)"
+      - name: Get package name
+        id: get-package-name
+        run: echo "name=$(jq -r .name package.json)" >> $GITHUB_OUTPUT
 
       - name: Check if package exists
         id: package-existence
