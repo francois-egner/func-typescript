@@ -1,0 +1,33 @@
+{
+  "name": "func-typescript",
+  "version": "0.1.0",
+  "description": "A functional programming library for TypeScript, offering immutable data structures, expressive pattern matching, and powerful monadic types for safer and more concise code.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --runInBand --detectOpenHandles"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/francois-egner/func-typescript.git"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.13",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.5.3"
+  },
+  "private": false,
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "typescript",
+    "try",
+    "option",
+    "functional-programming",
+    "error-handling",
+    "vavr"
+  ],
+  "license": "MIT"
+}

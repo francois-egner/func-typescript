@@ -1,0 +1,54 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
+
+jobs:
+  publish_jsr:
+    if: |
+      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' ||
+      github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: npx jsr publish
+
+  publish_npm:
+    if: |
+      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' ||
+      github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project
+        run: npm run build
+
+      - name: Authenticate with npm
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Check if version exists on NPM
+        run: |
+          npm show func-typescript@${{ steps.version.outputs.version }} > /dev/null 2>&1 || echo "Version does not exist, ready to publish."
+
+      - name: Publish to NPM
+        run: npm publish --access public
+        if: ${{ steps.version.outputs.version != '' }}
