@@ -46,19 +46,5 @@ jobs:
       - name: Build the project
         run: npm run build
 
-      - name: Get package name
-        id: get-package-name
-        run: echo "name=$(jq -r .name package.json)" >> $GITHUB_OUTPUT
-
-      - name: Check if package exists
-        id: package-existence
-        run: |
-          if npm view ${{ steps.get-package-name.outputs.name }} > /dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Publish to NPM
         run: npm publish --access public
-        if: ${{ steps.package-existence.outputs.exists == 'false' }}
