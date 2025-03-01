@@ -36,6 +36,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm install
@@ -46,10 +47,22 @@ jobs:
       - name: Authenticate with npm
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
+      - name: Install jq for version parsing
+        run: sudo apt-get install -y jq
+
+      - name: Get package version
+        id: package-version
+        run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+
       - name: Check if version exists on NPM
+        id: check-version
         run: |
-          npm show func-typescript@${{ steps.version.outputs.version }} > /dev/null 2>&1 || echo "Version does not exist, ready to publish."
+          if npm view func-typescript@${{ steps.package-version.outputs.version }} version >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Publish to NPM
+        if: ${{ steps.check-version.outputs.exists == 'false' }}
         run: npm publish --access public
-        if: ${{ steps.version.outputs.version != '' }}
