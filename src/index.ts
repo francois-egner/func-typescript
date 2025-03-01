@@ -1,2 +1,2 @@
-export {Try, NoSuchElementException} from "./lib";
+export {Try, Option, NoSuchElementException} from "./lib";
 
