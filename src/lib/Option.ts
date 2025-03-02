@@ -301,8 +301,9 @@ export class Option<T> {
      *
      * @returns {Promise<void>} A promise that resolves when the operation completes.
      */
-    public async run(): Promise<void>{
+    public async run(): Promise<Option<T>>{
         await this.runSteps();
+        return this;
     }
 
 
