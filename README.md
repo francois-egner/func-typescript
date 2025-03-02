@@ -1,6 +1,12 @@
 # func-typescript 🚀
 
-A modern JavaScript/TypeScript library for handling computations that may result in success or failure, and working with optional values in an asynchronous context. This library provides functional constructs inspired by functional programming languages, but tailored for JavaScript/TypeScript developers.
+You can find this library on:
+- NPM: [func-typescript](https://www.npmjs.com/package/func-typescript)
+- JSR: [func-typescript](https://jsr.io/@francois-egner/func-typescript)
+
+
+## A modern JavaScript/TypeScript library for handling computations that may result in success or failure, and working with optional values in an asynchronous context. This library provides functional constructs inspired by functional programming languages, but tailored for JavaScript/TypeScript developers.
+
 
 ## Features
 
