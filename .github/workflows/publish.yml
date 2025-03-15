@@ -1,20 +1,16 @@
 name: Publish
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
   workflow_run:
     workflows: ["Test"]
     types:
       - completed
+    branches:
+      - main
 
 jobs:
   publish_jsr:
-    if: |
-      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' ||
-      github.event_name == 'push'
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -24,9 +20,7 @@ jobs:
       - run: npx jsr publish
 
   publish_npm:
-    if: |
-      github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' ||
-      github.event_name == 'push'
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       id-token: write

@@ -299,10 +299,11 @@ export class Option<T> {
      * If the Option holds a value, this method performs an asynchronous operation and resolves to `void`.
      * If the Option is empty, it does nothing.
      *
-     * @returns {Promise<void>} A promise that resolves when the operation completes.
+     * @returns {Promise<Option<T>>} A promise that resolves when the operation completes.
      */
-    public async run(): Promise<void>{
+    public async run(): Promise<Option<T>>{
         await this.runSteps();
+        return this;
     }
 
 
