@@ -619,7 +619,7 @@ const option = Option.of(10)
   .map(v => v * 2)
   .filter(v => v > 5);
 
-await option.get();
+await option.run();
 ```
 
 #### `get(): Promise<Exclude<T, Nullable>>`
