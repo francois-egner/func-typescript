@@ -277,10 +277,10 @@ export class Try<T> {
      * If this `Try` is a `Failure`, the function does nothing and the failure is propagated unchanged.
      * The function is useful for performing logging, analytics, or other side-effects without modifying the original `Try`.
      *
-     * @param {(value: T) => Promise<void> | void} func A function to perform a side-effect with the value.
+     * @param {(value: T) => Promise<any> | any} func A function to perform a side-effect with the value.
      * @returns {Try<T>} The original `Try` instance, allowing for further chaining.
      */
-    public peek(func: (value: T) => Promise<void> | void): Try<T>{
+    public peek(func: (value: T) => Promise<any> | any): Try<T>{
         //According to the docs, peek is the same as `andThen`
         return new Try([...this.$internal.steps, (prev: Result)=> andThen(prev, func)])
     }
@@ -293,10 +293,10 @@ export class Try<T> {
      * If this `Try` is a `Failure`, the function does nothing and the failure is propagated unchanged.
      * This method is useful for chaining side-effects without modifying the original `Try`.
      *
-     * @param {(value: T) => Promise<void> | void} func A function to perform a side-effect with the value.
+     * @param {(value: T) => Promise<any> | any} func A function to perform a side-effect with the value.
      * @returns {Try<T>} The original `Try` instance, allowing for further chaining.
      */
-    public andThen(func: (value: T) => Promise<void> | void): Try<T>{
+    public andThen(func: (value: T) => Promise<any> | any): Try<T>{
         return new Try([...this.$internal.steps, (prev: Result)=> andThen(prev, func)])
     }
 
