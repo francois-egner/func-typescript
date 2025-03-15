@@ -431,7 +431,7 @@ const failure = await Try.failure(new Error('An error occurred'))
 
 <br>
 
-### `andThen(func: (value: T) => Promise<void> | void): Try<T>`
+### `andThen(func: (value: T) => Promise<any> | any): Try<T>`
 Runs the function if the Try instance is a Success.
 ```typescript
 //Success
@@ -446,7 +446,7 @@ const failure = await Try.failure(new Error('An error occurred'))
 ```
 <br>
 
-### `andFinally(func: () => Promise<void> | void): Try<T>`
+### `andFinally(func: () => Promise<any> | any): Try<T>`
 Runs the function no matter the internal state (success or failure).
 ```typescript
 //Success
@@ -505,7 +505,7 @@ const failureWithCustomException = await Try.success(10)
 
 <br>
 
-### `onFailure(func: (value: Error) => Promise<void> | void): Try<T>`
+### `onFailure(func: (value: Error) => Promise<any> | any): Try<T>`
 Runs the function if the Try instance is a Failure.
 ```typescript
 //Success
@@ -522,7 +522,7 @@ const failure = await Try.failure(new Error('An error occurred'))
 
 <br>
 
-### `onSuccess(func: (value: T) => Promise<void> | void): Try<T>`
+### `onSuccess(func: (value: T) => Promise<any> | any): Try<T>`
 Runs the function if the Try instance is a Success.
 ```typescript
 //Success
@@ -552,7 +552,7 @@ const failure = Try.failure(new Error('An error occurred')).getCause(); // => Er
 
 <br>
 
-### `peek(func: (value: T) => Promise<void> | void): Try<T>`
+### `peek(func: (value: T) => Promise<any> | any): Try<T>`
 Peeks the value of the Try instance if it is a Success, otherwise returns the Failure instance.
 ```typescript
 //Success
