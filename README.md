@@ -431,7 +431,7 @@ const failure = await Try.failure(new Error('An error occurred'))
 
 <br>
 
-### `andThen(func: (value: T) => Promise<void> | void): Try<T>`
+### `andThen(func: (value: T) => Promise<any> | any): Try<T>`
 Runs the function if the Try instance is a Success.
 ```typescript
 //Success
@@ -446,7 +446,7 @@ const failure = await Try.failure(new Error('An error occurred'))
 ```
 <br>
 
-### `andFinally(func: () => Promise<void> | void): Try<T>`
+### `andFinally(func: () => Promise<any> | any): Try<T>`
 Runs the function no matter the internal state (success or failure).
 ```typescript
 //Success
@@ -505,7 +505,7 @@ const failureWithCustomException = await Try.success(10)
 
 <br>
 
-### `onFailure(func: (value: Error) => Promise<void> | void): Try<T>`
+### `onFailure(func: (value: Error) => Promise<any> | any): Try<T>`
 Runs the function if the Try instance is a Failure.
 ```typescript
 //Success
@@ -522,7 +522,7 @@ const failure = await Try.failure(new Error('An error occurred'))
 
 <br>
 
-### `onSuccess(func: (value: T) => Promise<void> | void): Try<T>`
+### `onSuccess(func: (value: T) => Promise<any> | any): Try<T>`
 Runs the function if the Try instance is a Success.
 ```typescript
 //Success
@@ -552,7 +552,7 @@ const failure = Try.failure(new Error('An error occurred')).getCause(); // => Er
 
 <br>
 
-### `peek(func: (value: T) => Promise<void> | void): Try<T>`
+### `peek(func: (value: T) => Promise<any> | any): Try<T>`
 Peeks the value of the Try instance if it is a Success, otherwise returns the Failure instance.
 ```typescript
 //Success
@@ -572,7 +572,7 @@ The `Option` class is designed to handle optional values in a type-safe and func
 
 ### Initialization Functions
 
-#### `Option.some<U>(value: U): Option<U>`
+#### `some<U>(value: U): Option<U>`
 Creates an Option instance that contains a non-null value.
 
 **Example:**
@@ -581,7 +581,7 @@ const someValue = Option.some(10);
 // someValue is an Option<number> containing 10
 ```
 
-#### `Option.none(): Option<Nullable>`
+#### `none(): Option<Nullable>`
 Creates an Option instance that represents the absence of a value.
 
 **Example:**
@@ -590,7 +590,7 @@ const noneValue = Option.none();
 // noneValue is an Option<Nullable> representing no value
 ```
 
-#### `Option.of<T>(value: T): Option<T> | Option<Nullable>`
+#### `of<T>(value: T): Option<T> | Option<Nullable>`
 Creates an Option instance from the provided value. If the value is `null` or `undefined`, it returns an empty Option.
 
 **Example:**
@@ -599,7 +599,7 @@ const someValue = Option.of(10); // Option<number> containing 10
 const noneValue = Option.of(null); // Option<Nullable> representing no value
 ```
 
-#### `Option.when<U>(condition: boolean, value: U | (() => U)): Option<U | Nullable>`
+#### `when<U>(condition: boolean, value: U | (() => U)): Option<U | Nullable>`
 Creates an Option instance conditionally. If the condition is true, it returns an Option wrapping the provided value. If the condition is false, it returns an empty Option.
 
 **Example:**
@@ -610,7 +610,7 @@ const none = Option.when(false, 10); // Option<Nullable> representing no value
 
 ### Execution Functions
 
-#### `runSteps(): Promise<void>`
+#### `run(): Promise<Option<T>>`
 Executes the computation chain of this Option. This method triggers the execution of the entire sequence of operations that have been accumulated through prior method calls.
 
 **Example:**
@@ -619,7 +619,7 @@ const option = Option.of(10)
   .map(v => v * 2)
   .filter(v => v > 5);
 
-await option.get();
+await option.run();
 ```
 
 #### `get(): Promise<Exclude<T, Nullable>>`

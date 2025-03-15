@@ -1,6 +1,6 @@
 {
   "name": "func-typescript",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A functional programming library for TypeScript, offering immutable data structures, expressive pattern matching, and powerful monadic types for safer and more concise code.",
   "main": "dist/index.js",
   "scripts": {

@@ -277,10 +277,10 @@ export class Try<T> {
      * If this `Try` is a `Failure`, the function does nothing and the failure is propagated unchanged.
      * The function is useful for performing logging, analytics, or other side-effects without modifying the original `Try`.
      *
-     * @param {(value: T) => Promise<void> | void} func A function to perform a side-effect with the value.
+     * @param {(value: T) => Promise<any> | any} func A function to perform a side-effect with the value.
      * @returns {Try<T>} The original `Try` instance, allowing for further chaining.
      */
-    public peek(func: (value: T) => Promise<void> | void): Try<T>{
+    public peek(func: (value: T) => Promise<any> | any): Try<T>{
         //According to the docs, peek is the same as `andThen`
         return new Try([...this.$internal.steps, (prev: Result)=> andThen(prev, func)])
     }
@@ -293,10 +293,10 @@ export class Try<T> {
      * If this `Try` is a `Failure`, the function does nothing and the failure is propagated unchanged.
      * This method is useful for chaining side-effects without modifying the original `Try`.
      *
-     * @param {(value: T) => Promise<void> | void} func A function to perform a side-effect with the value.
+     * @param {(value: T) => Promise<any> | any} func A function to perform a side-effect with the value.
      * @returns {Try<T>} The original `Try` instance, allowing for further chaining.
      */
-    public andThen(func: (value: T) => Promise<void> | void): Try<T>{
+    public andThen(func: (value: T) => Promise<any> | any): Try<T>{
         return new Try([...this.$internal.steps, (prev: Result)=> andThen(prev, func)])
     }
 
@@ -430,10 +430,10 @@ export class Try<T> {
      * regardless of whether the `Try` is a `Success` or a `Failure`.
      * The original `Try` is returned unchanged, allowing for further chaining.
      *
-     * @param {() => Promise<void> | void} func A function to perform the side-effect. It is called after the `Try` computation completes.
+     * @param {() => Promise<any> | any} func A function to perform the side-effect. It is called after the `Try` computation completes.
      * @returns {Try<T>} The original `Try` instance, allowing for further chaining.
      */
-    public andFinally(func: () => Promise<void> | void): Try<T> {
+    public andFinally(func: () => Promise<any> | any): Try<T> {
         return new Try([...this.$internal.steps, (prev: Result)=> andFinally(prev, func)])
     }
 
@@ -474,10 +474,10 @@ export class Try<T> {
      * If this `Try` is a `Failure`, the function does nothing and the failure is propagated unchanged.
      * This method is useful for actions like logging or other operations that should only run when the `Try` is a success.
      *
-     * @param {(value: T) => Promise<void> | void} func A function to execute the side-effect with the value.
+     * @param {(value: T) => Promise<any> | any} func A function to execute the side-effect with the value.
      * @returns {Try<T>} The original `Try` instance, allowing for further chaining.
      */
-    public onSuccess(func: (value: T) => Promise<void> | void): Try<T>{
+    public onSuccess(func: (value: T) => Promise<any> | any): Try<T>{
         return new Try([...this.$internal.steps, (prev: Result)=> onSuccess(prev, func)])
     }
 
@@ -489,10 +489,10 @@ export class Try<T> {
      * If this `Try` is a `Success`, the function does nothing and the success value is propagated unchanged.
      * This method is useful for actions like logging or handling errors when the `Try` fails.
      *
-     * @param {(value: Error) => Promise<void> | void} func A function to execute the side-effect with the error.
+     * @param {(value: Error) => Promise<any> | any} func A function to execute the side-effect with the error.
      * @returns {Try<T>} The original `Try` instance, allowing for further chaining.
      */
-    public onFailure(func: (value: Error) => Promise<void> | void): Try<T>{
+    public onFailure(func: (value: Error) => Promise<any> | any): Try<T>{
         return new Try([...this.$internal.steps, (prev: Result)=> onFailure(prev, func)])
     }
 
