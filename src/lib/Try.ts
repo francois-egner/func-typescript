@@ -6,6 +6,7 @@ import {
     onSuccess, onFailure,
     filter, filterNot, mapFailureWith,
     recover, recoverWith,
+    filterTry, filterNotTry,
 } from "./functions";
 import {Result} from "./Result";
 
@@ -317,6 +318,22 @@ export class Try<T> {
         return new Try([...this.$internal.steps, (prev: Result)=> filter(prev, predicateFunc, errorProvider)])
     }
 
+    /**
+     * Filters the value inside the `Try` if it is a `Success`, returning a `Failure` if the predicate does match.
+     *
+     * If this `Try` is a `Success` and the `predicateFunc` returns `false`, the value is returned unchanged.
+     * If the `predicateFunc` returns `true`, the `errorProvider` function (if provided) is called to generate an error,
+     * and the result is a `Failure` with that error. If `errorProvider` is not provided, `NoSuchElementException` will be thrown.
+     * If this `Try` is a `Failure`, the failure is propagated unchanged.
+     *
+     * @param {(value: T) => Try<boolean> | Promise<Try<boolean>>} predicateFunc A function that determines whether the value should be kept.
+     * @param {(value: T) => Error} [errorProvider] A function that generates an error if the predicate returns `false`.
+     * @returns {Try<T>} A new `Try` instance that either contains the value, or a `Failure` with the generated error.
+     */
+    public filterTry(predicateFunc: (value: T) => Try<boolean> | Promise<Try<boolean>>, errorProvider?: (value: T) => Error): Try<T>{
+        return new Try([...this.$internal.steps, (prev: Result)=> filterTry(prev, predicateFunc, errorProvider)])
+    }
+
 
     /**
      * Filters the value inside the `Try` if it is a `Success`, returning a `Failure` if the predicate does not match.
@@ -332,6 +349,24 @@ export class Try<T> {
      */
     public filterNot(predicateFunc: (value: T) => boolean | Promise<boolean>, errorProvider?: (value: T) => Error): Try<T>{
         return new Try([...this.$internal.steps, (prev: Result)=> filterNot(prev, predicateFunc, errorProvider)])
+    }
+
+    
+
+    /**
+     * Filters the value inside the `Try` if it is a `Success`, returning a `Failure` if the predicate does not match.
+     *
+     * If this `Try` is a `Success` and the `predicateFunc` returns `true`, the value is returned unchanged.
+     * If the `predicateFunc` returns `false`, the `errorProvider` function (if provided) is called to generate an error,
+     * and the result is a `Failure` with that error. If `errorProvider` is not provided, `NoSuchElementException` will be thrown.
+     * If this `Try` is a `Failure`, the failure is propagated unchanged.
+     *
+     * @param {(value: T) => Try<boolean> | Promise<Try<boolean>>} predicateFunc A function that determines whether the value should be excluded.
+     * @param {(value: T) => Error} [errorProvider] A function that generates an error if the predicate returns `true`.
+     * @returns {Try<T>} A new `Try` instance that either contains the value, or a `Failure` with the generated error.
+     */
+    public filterNotTry(predicateFunc: (value: T) => Try<boolean> | Promise<Try<boolean>>, errorProvider?: (value: T) => Error): Try<T>{
+        return new Try([...this.$internal.steps, (prev: Result)=> filterNotTry(prev, predicateFunc, errorProvider)])
     }
 
 

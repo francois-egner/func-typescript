@@ -481,6 +481,27 @@ const failureWithCustomError = await Try.success(10)
         .get(); // => Will throw 'Custom Predicate does not hold for 10'
 ```
 
+<br>
+
+### `filterTry(predicateFunc: (value: T) => Try<boolean> | Promise<Try<boolean>>, errorProvider?: (value: T) => Error): Try<T>`
+Will throw default or custom Error if predicate is true.
+```typescript
+//Failure
+const value = await Try.success(10)
+        .filter(v => Try.success(v > 5))
+        .get(); // => Will throw 'Predicate does not hold for 10'
+        
+//Sucess
+const failure = await Try.success(10)
+        .filter(v => Try.success(v > 15))
+        .get(); // => 10
+
+//Failure with custom error
+const failureWithCustomError = await Try.success(10)
+        .filter(v => Try.success(v > 5), v => { throw new Error("Custom Predicate does not hold for " + v)})
+        .get(); // => Will throw 'Custom Predicate does not hold for 10'
+```
+
 
 <br>
 
@@ -500,6 +521,27 @@ const failure = await Try.success(10)
 //Failure with custom error
 const failureWithCustomException = await Try.success(10)
         .filterNot(v => v > 15, v => { throw new Error("Custom Predicate holds for " + v)})
+        .get(); // => Will throw 'Custom Predicate holds for 10'
+```
+
+<br>
+
+### `filterNotTry(predicateFunc: (value: T) => Try<boolean> | Promise<Try<boolean>>, errorProvider?: (value: T) => Error): Try<T>`
+Will throw default or custom Error if predicate is false.
+```typescript
+//Failure
+const value = await Try.success(10)
+        .filterNot(v => Try.success(v > 15))
+        .get(); // => Will throw 'Predicate holds for 10'
+
+//Success
+const failure = await Try.success(10)
+        .filterNot(v => Try.success(v > 5))
+        .get(); // => 10
+
+//Failure with custom error
+const failureWithCustomException = await Try.success(10)
+        .filterNot(v => Try.success(v > 15), v => { throw new Error("Custom Predicate holds for " + v)})
         .get(); // => Will throw 'Custom Predicate holds for 10'
 ```
 
