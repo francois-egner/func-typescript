@@ -280,26 +280,71 @@ describe("Try", () => {
     });
     });
 
+
+    describe("Try.filterTry", () => {
+
+        test("filterTry should return Failure if predicate does not hold", async () => {
+        const result = Try.success(2).filterTry(v => Try.success(v <= 2));
+        await expect(result.get()).rejects.toThrow("Predicate does not hold for 2");
+        expect(result.isFailure()).toBe(true);
+        });
+
+        test("filterTry should throw custom exception if predicate does not hold", async () => {
+        const result = Try.success(2).filterTry(v => Try.success(v <= 2), v => Error("Custom Predicate does not hold for " + v));
+        await expect(result.get()).rejects.toThrow("Custom Predicate does not hold for 2");
+        expect(result.isFailure()).toBe(true);
+        });
+
+        test("filterTry should return Success if predicate holds", async () => {
+        const result = Try.success(2).filterTry(v => Try.success(v > 2));
+        await expect(result.get()).resolves.toBe(2);
+        expect(result.isSuccess()).toBe(true);
+
+    });
+    });
+
     describe("Try.filterNot", () => {
 
-      test("filterNot should return Failure if predicate does not hold", async () => {
-          const result = Try.success(2).filterNot(v => v > 2);
-          await expect(result.get()).rejects.toThrow("Predicate does not hold for 2");
-          expect(result.isFailure()).toBe(true);
-      });
+        test("filterNot should return Failure if predicate does not hold", async () => {
+            const result = Try.success(2).filterNot(v => v > 2);
+            await expect(result.get()).rejects.toThrow("Predicate does not hold for 2");
+            expect(result.isFailure()).toBe(true);
+        });
 
-      test("filterNot should throw custom exception if predicate does not hold", async () => {
-          const result = Try.success(2).filterNot(v => v > 2, v => Error("Custom Predicate does not hold for " + v));
-          await expect(result.get()).rejects.toThrow("Custom Predicate does not hold for 2");
-          expect(result.isFailure()).toBe(true);
-      });
+        test("filterNot should throw custom exception if predicate does not hold", async () => {
+            const result = Try.success(2).filterNot(v => v > 2, v => Error("Custom Predicate does not hold for " + v));
+            await expect(result.get()).rejects.toThrow("Custom Predicate does not hold for 2");
+            expect(result.isFailure()).toBe(true);
+        });
 
-      test("filterNot should return Success if predicate holds", async () => {
-          const result = Try.success(2).filterNot(v => v <= 2);
-          await expect(result.get()).resolves.toBe(2);
-          expect(result.isSuccess()).toBe(true);
+        test("filterNot should return Success if predicate holds", async () => {
+            const result = Try.success(2).filterNot(v => v <= 2);
+            await expect(result.get()).resolves.toBe(2);
+            expect(result.isSuccess()).toBe(true);
 
-      });
+        });
+    });
+
+    describe("Try.filterNotTry", () => {
+
+        test("filterNotTry should return Failure if predicate does not hold", async () => {
+            const result = Try.success(2).filterNotTry(v => Try.success(v > 2));
+            await expect(result.get()).rejects.toThrow("Predicate does not hold for 2");
+            expect(result.isFailure()).toBe(true);
+        });
+
+        test("filterNotTry should throw custom exception if predicate does not hold", async () => {
+            const result = Try.success(2).filterNotTry(v => Try.success(v > 2), v => Error("Custom Predicate does not hold for " + v));
+            await expect(result.get()).rejects.toThrow("Custom Predicate does not hold for 2");
+            expect(result.isFailure()).toBe(true);
+        });
+
+        test("filterNotTry should return Success if predicate holds", async () => {
+            const result = Try.success(2).filterNotTry(v => Try.success(v <= 2));
+            await expect(result.get()).resolves.toBe(2);
+            expect(result.isSuccess()).toBe(true);
+
+        });
     });
 
     describe("Try.peek", () => {
