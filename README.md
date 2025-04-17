@@ -446,6 +446,21 @@ const failure = await Try.failure(new Error('An error occurred'))
 ```
 <br>
 
+### `andThenTry(func: (value: T) => Promise<Try<any>> | Try<any>): Try<T>`
+Runs the function if the Try instance is a Success.
+```typescript
+//Success
+const value = await Try.success(10)
+        .andThen(v => Try.of(()=>console.log(v))) // => Will print 10
+        .get(); // => 10
+
+//Failure
+const failure = await Try.failure(new Error('An error occurred'))
+        .andThenTry(v => Try.of(() => console.log(v))) // => Will print nothing
+        .get(); // => Will throw 'An error occurred'
+```
+<br>
+
 ### `andFinally(func: () => Promise<any> | any): Try<T>`
 Runs the function no matter the internal state (success or failure).
 ```typescript
@@ -461,6 +476,23 @@ const failure = Try.failure(new Error("5")).andFinally(()=>{v_failure = 10}); //
 
 
 <br>
+
+### `andFinallyTry(func: () => Promise<Try<any>> | Try<any>): Try<T>`
+Runs the function no matter the internal state (success or failure).
+```typescript
+//Success
+let v_success;
+const success = Try.of(() => 5).andFinallyTry(()=>Try.of(() => {v_success = 10})); // => will set the value of v to 10
+
+
+//Failure
+let v_failure;
+const failure = Try.failure(new Error("5")).andFinallyTry(()=>Try.of(() => {v_failure = 10})); // => will set the value of v to 10, despite being a failure
+```
+
+
+<br>
+
 
 ### `filter(predicateFunc: (value: T) => boolean | Promise<boolean>, errorProvider?: (value: T) => Error): Try<T>`
 Will throw default or custom Error if predicate is true.

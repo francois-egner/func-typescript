@@ -3,10 +3,12 @@ import {
     get, getOrElse, getOrElseGet, getOrElseThrow, run,
     map, mapIf, flatMap, flatMapIf, mapFailure,
     andThen,  andFinally,
+    andThenTry, andFinallyTry,
     onSuccess, onFailure,
     filter, filterNot, mapFailureWith,
     recover, recoverWith,
     filterTry, filterNotTry,
+    
 } from "./functions";
 import {Result} from "./Result";
 
@@ -303,6 +305,21 @@ export class Try<T> {
 
 
     /**
+     * Performs a side-effect with the value inside the `Try` if it is a `Success`, and then returns the original `Try`.
+     *
+     * If this `Try` is a `Success`, the provided `func` is called with the value, and after the side effect, the original `Try` is returned.
+     * If this `Try` is a `Failure`, the function does nothing and the failure is propagated unchanged.
+     * This method is useful for chaining side-effects without modifying the original `Try`.
+     *
+     * @param {(value: T) => Promise<Try<any>> | Try<any>} func A function to perform a side-effect with the value.
+     * @returns {Try<T>} The original `Try` instance, allowing for further chaining.
+     */
+    public andThenTry(func: (value: T) => Promise<Try<any>> | Try<any>): Try<T>{
+        return new Try([...this.$internal.steps, (prev: Result)=> andThenTry(prev, func)])
+    }
+
+
+    /**
      * Filters the value inside the `Try` if it is a `Success`, returning a `Failure` if the predicate does match.
      *
      * If this `Try` is a `Success` and the `predicateFunc` returns `false`, the value is returned unchanged.
@@ -470,6 +487,21 @@ export class Try<T> {
      */
     public andFinally(func: () => Promise<any> | any): Try<T> {
         return new Try([...this.$internal.steps, (prev: Result)=> andFinally(prev, func)])
+    }
+
+
+    /**
+     * Performs a side-effect with no impact on the `Try` result, after the computation is complete.
+     *
+     * This method allows you to perform some cleanup or side-effects, such as logging or resource releasing,
+     * regardless of whether the `Try` is a `Success` or a `Failure`.
+     * The original `Try` is returned unchanged, allowing for further chaining.
+     *
+     * @param {() => Promise<Try<any>> | Try<any>} func A function to perform the side-effect. It is called after the `Try` computation completes.
+     * @returns {Try<T>} The original `Try` instance, allowing for further chaining.
+     */
+    public andFinallyTry(func: () => Promise<Try<any>> | Try<any>): Try<T> {
+        return new Try([...this.$internal.steps, (prev: Result)=> andFinallyTry(prev, func)])
     }
 
 

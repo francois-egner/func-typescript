@@ -1,3 +1,7 @@
+## [1.3.0] - 2025-04-17
+### Added
+- `andThenTry` and `andFinallyTry` for running side affect functions returning a `Try`
+
 ## [1.2.0] - 2025-04-14
 ### Added
 - `filterTry` and `filterNotTry` for filtering based on a `Try` returning predicate function
