@@ -483,4 +483,36 @@ describe("Try", () => {
 
       });
     });
+
+    describe("Try.sequence", () => {
+
+        test("sequence should run all Try instances and return an array of the results", async () => {
+            const r = Try.success(2);
+            const r2 = Try.success(3);
+            const r3 = Try.success("4");
+
+
+            const r4 = Try.sequence([r, r2, r3]);
+
+            await expect(r4.get()).resolves.toEqual([2, 3, "4"]);
+            expect(r4.isSuccess()).toBe(true);
+
+        });
+
+        test("sequence should run all Try instances and results in Failure for the first instance that is a Failure", async () => {
+            const r = Try.success(2);
+            const r2 = Try.success(3);
+            const r3 = Try.of(() => {
+                if(0.3 > 0.5) return "3";
+                throw new Error("Random error");
+            });
+
+
+            const r4 = Try.sequence([r, r2, r3]);
+
+            await expect(r4.get()).rejects.toThrow("Random error");
+            expect(r4.isFailure()).toBe(true);
+
+        });
+    });
 });

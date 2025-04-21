@@ -1,3 +1,7 @@
+## [1.4.0] - 2025-04-21
+### Added
+- `sequence` for running Tries returning an array with the results.
+
 ## [1.3.0] - 2025-04-17
 ### Added
 - `andThenTry` and `andFinallyTry` for running side affect functions returning a `Try`
