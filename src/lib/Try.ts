@@ -1,5 +1,5 @@
 import {
-    of, success, failure, combine,
+    of, success, failure, combine, sequence,
     get, getOrElse, getOrElseGet, getOrElseThrow, run,
     map, mapIf, flatMap, flatMapIf, mapFailure,
     andThen,  andFinally,
@@ -8,6 +8,7 @@ import {
     filter, filterNot, mapFailureWith,
     recover, recoverWith,
     filterTry, filterNotTry,
+    
     
 } from "./functions";
 import {Result} from "./Result";
@@ -106,6 +107,21 @@ export class Try<T> {
     static combine<T extends any[], R>(...args: [...{ [K in keyof T]: Try<T[K]> }, (...values: T) => R | Promise<R>]): Try<R> {
         // @ts-ignore
         return new Try([()=> combine(...args)]);
+    }
+
+    /**
+     * Sequences multiple `Try` instances into a single `Try` instance.
+     *
+     * The function receives the successful values of all `Try` instances as arguments.
+     * If all `Try` instances are `Success`, the function is executed, and the result is wrapped in a `Success`.
+     * If any `Try` instance is a `Failure`, the first encountered failure is returned.
+     *
+     * @template T The tuple type representing the values extracted from the `Try` instances.
+     * @param { [K in keyof T]: Try<T[K]> } tries An array where the first elements are `Try` instances.
+     * @returns {Try<T>} A `Try` instance containing the values of the `Try` instances.
+     */
+    static sequence<T extends readonly unknown[]>(tries: { [K in keyof T]: Try<T[K]> }): Try<T> {
+        return new Try([()=> sequence(tries)]);
     }
 
 
