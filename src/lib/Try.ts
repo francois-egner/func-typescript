@@ -55,6 +55,13 @@ export class Try<T> {
         finalResult?: Result;
 
         /**
+         * Whether the computation has been completed and the final result is available.
+         *
+         * @type {boolean}
+         */
+        isComputed: boolean,
+
+        /**
          * A list of steps representing the various operations performed during the computation.
          * Each step represents an individual transformation or check.
          *
@@ -63,6 +70,7 @@ export class Try<T> {
         steps: Step[];
     } = {
         finalResult: undefined, // Initially undefined as computation may still be in progress
+        isComputed: false,
         steps: [] // Starts with an empty list of steps
     };
 
@@ -460,8 +468,7 @@ export class Try<T> {
      * @returns {Promise<Try<T>>} A `Promise` that resolves to a `Try` instance, either containing the result of a successful computation or an error.
      */
     public async run(): Promise<Try<T>>{
-        await run(this);
-        return this;
+        return run(this) as unknown as Promise<Try<T>>;
     }
 
 

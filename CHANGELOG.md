@@ -1,3 +1,7 @@
+## [1.5.0] - 2025-06-16
+### Modified
+- `get`, `getOrElse`, `getOrElseGet`, `getOrElseThrow` will no longer rerun the entire steps chain and return the latest/cached result
+
 ## [1.4.0] - 2025-04-21
 ### Added
 - `sequence` for running Tries returning an array with the results.
