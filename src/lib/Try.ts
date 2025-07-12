@@ -128,8 +128,8 @@ export class Try<T> {
      * @param { [K in keyof T]: Try<T[K]> } tries An array where the first elements are `Try` instances.
      * @returns {Try<T>} A `Try` instance containing the values of the `Try` instances.
      */
-    static sequence<T extends readonly unknown[]>(tries: { [K in keyof T]: Try<T[K]> }): Try<T> {
-        return new Try([()=> sequence(tries)]);
+    static sequence<T extends readonly unknown[]>(tries: { [K in keyof T]: Try<T[K]> }, parallel = true): Try<T> {
+        return new Try([()=> sequence(tries, parallel)]);
     }
 
 

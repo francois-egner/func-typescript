@@ -550,7 +550,7 @@ describe("Try", () => {
             const r3 = Try.success("4");
 
 
-            const r4 = Try.sequence([r, r2, r3]);
+            const r4 = Try.sequence([r, r2, r3], false);
 
             await expect(r4.get()).resolves.toEqual([2, 3, "4"]);
             expect(r4.isSuccess()).toBe(true);
@@ -566,11 +566,63 @@ describe("Try", () => {
             });
 
 
-            const r4 = Try.sequence([r, r2, r3]);
+            const r4 = Try.sequence([r, r2, r3], false);
 
             await expect(r4.get()).rejects.toThrow("Random error");
             expect(r4.isFailure()).toBe(true);
 
         });
+
+
+        test("sequence should run all Try instances in parallel and return an array of the result", async () => {
+            const r = Try.success(4).map(async v => {
+                await new Promise(resolve => setTimeout(resolve, 1000 * v));
+                return v;
+            });
+            const r2 = Try.success(3).map(async v => {
+                await new Promise(resolve => setTimeout(resolve, 1000  * v));
+                return v;
+            });
+            const r3 = Try.success("2")
+            .map(async v => {
+                await new Promise(resolve => setTimeout(resolve, 1000  * Number(v)));
+                return v;
+            });
+            
+
+            const r4 = Try.sequence([r, r2, r3]);
+            const start = performance.now();
+            await expect(r4.get()).resolves.toEqual([4, 3, "2"]);
+            expect(r4.isSuccess()).toBe(true);
+            const timeTaken = (performance.now() - start) / 1000;
+            expect(timeTaken).toBeLessThan(5); //The maximum amount of time it should take is 5 seconds, because the longest running task is 4 seconds. The other 1 second is for the overhead of the test.
+        });
+
+        test("sequence should run all Try instances in parallel and results in Failure for the first instance that is a Failure", async () => {
+            const r = Try.success(4).map(async v => {
+                await new Promise(resolve => setTimeout(resolve, 1000 * v));
+                return v;
+            });
+            const r2 = Try.success(3).map(async v => {
+                await new Promise(resolve => setTimeout(resolve, 1000  * v));
+                return v;
+            });
+            const r3 = Try.success("2")
+            .map(async v => {
+                await new Promise(resolve => setTimeout(resolve, 1000  * Number(v)));
+                throw new Error("r3 error");
+                return v;
+            });
+            
+
+            const r4 = Try.sequence([r, r2, r3]);
+            const start = performance.now();
+            await expect(r4.get()).rejects.toThrow("r3 error");
+            expect(r4.isFailure()).toBe(true);
+            const timeTaken = (performance.now() - start) / 1000;
+            expect(timeTaken).toBeLessThan(3); //The maximum amount of time it should take is 3 seconds, because the longest running task until the error is thrown is 2 seconds. The other 1 second is for the overhead of the test.
+        });
+
+
     });
 });
