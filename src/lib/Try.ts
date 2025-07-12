@@ -112,7 +112,9 @@ export class Try<T> {
      * @param {...Array<Try<T[number]>>} args An array where the first elements are `Try` instances, followed by a function.
      * @returns {Try<R>} A `Try` instance containing either the function's result or the first failure encountered.
      */
-    static combine<T extends any[], R>(...args: [...{ [K in keyof T]: Try<T[K]> }, (...values: T) => R | Promise<R>]): Try<R> {
+    static combine<T extends any[], R>(...args: [...{ [K in keyof T]: Try<T[K]> }, (...values: T) => R | Promise<R>]): Try<R>;
+    static combine<T extends any[], R>(...args: [...{ [K in keyof T]: Try<T[K]> }, (...values: T) => R | Promise<R>, boolean]): Try<R>;
+    static combine<T extends any[], R>(...args: any[]): Try<R> {
         // @ts-ignore
         return new Try([()=> combine(...args)]);
     }

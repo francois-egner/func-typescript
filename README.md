@@ -104,10 +104,12 @@ const of = await Try.of(() => {
 <br>
 
 
-### `static combine<T extends any[], R>(...args: [...{ [K in keyof T]: Try<T[K]> }, (...values: T) => R | Promise<R>]): Try<R>`
-Sometimes you may want to combine multiple Try instances into one. This function allows you to do that. It takes multiple Try instances and a function that will be executed if all Try instances are successful. If one of the Try instances is a failure, the function will not be executed and the resulting Try instance will be a failure. <br>
+### `static combine<T extends any[], R>(...args: [...{ [K in keyof T]: Try<T[K]> }, (...values: T) => R | Promise<R>, boolean?]): Try<R>`
+Sometimes you may want to combine multiple Try instances into one. This function allows you to do that. It takes multiple Try instances and a function that will be executed if all Try instances are successful. If one of the Try instances is a failure, the function will not be executed and the resulting Try instance will be a failure. 
+
+The last parameter is an optional boolean that controls whether the Try instances should be executed in parallel (`true`) or sequentially (`false`). By default, they are executed in parallel. <br>
 ```typescript
-//All passed Try instances are successful
+//All passed Try instances are successful (parallel execution by default)
 const r = Try.success(2);
 const r2 = Try.success(3);
 const r3 = Try.of(() => {
@@ -119,6 +121,12 @@ const f = (a: number, b: number, c: string) => a + b + c;
 
 const r4 = await Try.combine(r, r2, r3, f).get(); //=> "53" ;
 
+//Sequential execution
+const r4_sequential = await Try.combine(r, r2, r3, f, false).get(); //=> "53" ;
+
+//Parallel execution (explicit)
+const r4_parallel = await Try.combine(r, r2, r3, f, true).get(); //=> "53" ;
+
 //One of the passed Try instances is a failure
 const r = Try.success(2);
 const r2 = Try.success(3);
@@ -126,7 +134,6 @@ const r3 = Try.of(() => {
   if(0.3 > 0.5) return "3";
   throw new Error("Random error");
 }); //=> Is a Failure
-
 
 const f = (a: number, b: number, c: string) => a + b + c;
 
@@ -137,18 +144,22 @@ await r4.get(); //=> Will throw 'Random error'
 <br>
 
 
-### `static sequence<T extends readonly unknown[]>(tries: { [K in keyof T]: Try<T[K]> }): Try<T>`
-Runs all tries provided and returns their results in an array. All Tries are run sequentially.
+### `static sequence<T extends readonly unknown[]>(tries: { [K in keyof T]: Try<T[K]> }, parallel?: boolean): Try<T>`
+Runs all tries provided and returns their results in an array. The second parameter controls whether the Tries are run in parallel (`true`) or sequentially (`false`). By default, they are run sequentially.
+
 ```typescript
-//All passed Try instances are successful
+//All passed Try instances are successful (sequential execution by default)
 const r = Try.success(2);
 const r2 = Try.success(3);
 const r3 = Try.success("4");
 
+const r4 = await Try.sequence([r, r2, r3]).get(); //-> [2,3,"4"]
 
-const r4 = Try.sequence([r, r2, r3]).get(); //-> [2,3,"4"]
+//Sequential execution (explicit)
+const r4_sequential = await Try.sequence([r, r2, r3], false).get(); //-> [2,3,"4"]
 
-
+//Parallel execution
+const r4_parallel = await Try.sequence([r, r2, r3], true).get(); //-> [2,3,"4"]
 
 //One of the passed Try instances is a failure
 const r = Try.success(2);
@@ -158,8 +169,7 @@ if(0.3 > 0.5) return "3";
 throw new Error("Random error");
 });
 
-
-const r4 = Try.sequence([r, r2, r3]).get(); //=> Will throw 'Random error'
+const r4 = await Try.sequence([r, r2, r3]).get(); //=> Will throw 'Random error'
 
 ```
 
