@@ -104,10 +104,12 @@ const of = await Try.of(() => {
 <br>
 
 
-### `static combine<T extends any[], R>(...args: [...{ [K in keyof T]: Try<T[K]> }, (...values: T) => R | Promise<R>]): Try<R>`
-Sometimes you may want to combine multiple Try instances into one. This function allows you to do that. It takes multiple Try instances and a function that will be executed if all Try instances are successful. If one of the Try instances is a failure, the function will not be executed and the resulting Try instance will be a failure. <br>
+### `static combine<T extends any[], R>(...args: [...{ [K in keyof T]: Try<T[K]> }, (...values: T) => R | Promise<R>, boolean?]): Try<R>`
+Sometimes you may want to combine multiple Try instances into one. This function allows you to do that. It takes multiple Try instances and a function that will be executed if all Try instances are successful. If one of the Try instances is a failure, the function will not be executed and the resulting Try instance will be a failure. 
+
+The last parameter is an optional boolean that controls whether the Try instances should be executed in parallel (`true`) or sequentially (`false`). By default, they are executed in parallel. <br>
 ```typescript
-//All passed Try instances are successful
+//All passed Try instances are successful (parallel execution by default)
 const r = Try.success(2);
 const r2 = Try.success(3);
 const r3 = Try.of(() => {
@@ -119,6 +121,12 @@ const f = (a: number, b: number, c: string) => a + b + c;
 
 const r4 = await Try.combine(r, r2, r3, f).get(); //=> "53" ;
 
+//Sequential execution
+const r4_sequential = await Try.combine(r, r2, r3, f, false).get(); //=> "53" ;
+
+//Parallel execution (explicit)
+const r4_parallel = await Try.combine(r, r2, r3, f, true).get(); //=> "53" ;
+
 //One of the passed Try instances is a failure
 const r = Try.success(2);
 const r2 = Try.success(3);
@@ -126,7 +134,6 @@ const r3 = Try.of(() => {
   if(0.3 > 0.5) return "3";
   throw new Error("Random error");
 }); //=> Is a Failure
-
 
 const f = (a: number, b: number, c: string) => a + b + c;
 
@@ -137,18 +144,22 @@ await r4.get(); //=> Will throw 'Random error'
 <br>
 
 
-### `static sequence<T extends readonly unknown[]>(tries: { [K in keyof T]: Try<T[K]> }): Try<T>`
-Runs all tries provided and returns their results in an array. All Tries are run sequentially.
+### `static sequence<T extends readonly unknown[]>(tries: { [K in keyof T]: Try<T[K]> }, parallel?: boolean): Try<T>`
+Runs all tries provided and returns their results in an array. The second parameter controls whether the Tries are run in parallel (`true`) or sequentially (`false`). By default, they are run in parallel.
+
 ```typescript
-//All passed Try instances are successful
+//All passed Try instances are successful (parallel execution by default)
 const r = Try.success(2);
 const r2 = Try.success(3);
 const r3 = Try.success("4");
 
+const r4 = await Try.sequence([r, r2, r3]).get(); //-> [2,3,"4"]
 
-const r4 = Try.sequence([r, r2, r3]).get(); //-> [2,3,"4"]
+//Sequential execution (explicit)
+const r4_sequential = await Try.sequence([r, r2, r3], false).get(); //-> [2,3,"4"]
 
-
+//Parallel execution (explicit)
+const r4_parallel = await Try.sequence([r, r2, r3], true).get(); //-> [2,3,"4"]
 
 //One of the passed Try instances is a failure
 const r = Try.success(2);
@@ -158,8 +169,7 @@ if(0.3 > 0.5) return "3";
 throw new Error("Random error");
 });
 
-
-const r4 = Try.sequence([r, r2, r3]).get(); //=> Will throw 'Random error'
+const r4 = await Try.sequence([r, r2, r3]).get(); //=> Will throw 'Random error'
 
 ```
 
@@ -249,10 +259,10 @@ const failure = await Try.failure(new Error('An error occurred')).getOrElse(0); 
 Returns the value of the Try instance if it is a Success, otherwise returns the value returned by the function.
 ```typescript
 //Success
-const value = await Try.success(10).getOrElseGet(() => 0); // => 10
+const value = await Try.success(10).getOrElseGet((ex) => 0); // => 10
 
 //Failure
-const failure = await Try.failure(new Error('An error occurred')).getOrElseGet(() => 0); // => 0
+const failure = await Try.failure(new Error('An error occurred')).getOrElseGet((ex) => 0); // => 0
 ```
 
 <br>
@@ -261,10 +271,10 @@ const failure = await Try.failure(new Error('An error occurred')).getOrElseGet((
 Returns the value of the Try instance if it is a Success, otherwise throws the error returned by the function.
 ```typescript
 //Success
-const value = await Try.success(10).getOrElseThrow(() => new Error('An error occurred')); // => 10
+const value = await Try.success(10).getOrElseThrow((error) => new Error('An error occurred')); // => 10
 
 //Failure
-const failure = await Try.failure(new Error('An error occurred')).getOrElseThrow(() => new Error('Another error occurred')); // => Will throw 'Another error occurred'
+const failure = await Try.failure(new Error('An error occurred')).getOrElseThrow((error) => new Error('Another error occurred')); // => Will throw 'Another error occurred'
 ```
 
 <br>
@@ -272,25 +282,29 @@ const failure = await Try.failure(new Error('An error occurred')).getOrElseThrow
 ## Other functions
 
 ### `isSuccess(): boolean`
-Returns true if the Try instance is a Success, otherwise returns false.
+Returns true if the Try instance is a Success, otherwise returns false. **Note: This method requires the Try to be executed first using `run()` or `get()` to determine the actual state.**
 ```typescript
 //Success
-const success = Try.success(10).isSuccess(); // => true
+const success = await Try.success(10).run();
+success.isSuccess(); // => true
 
 //Failure
-const failure = Try.failure(new Error('An error occurred')).run().isSuccess(); // => false
+const failure = await Try.failure(new Error('An error occurred')).run();
+failure.isSuccess(); // => false
 ```
 
 <br>
 
 ### `isFailure(): boolean`
-Returns true if the Try instance is a Failure, otherwise returns false.
+Returns true if the Try instance is a Failure, otherwise returns false. **Note: This method requires the Try to be executed first using `run()` or `get()` to determine the actual state.**
 ```typescript
 //Success
-const success = Try.success(10).isFailure(); // => false
+const success = await Try.success(10).run();
+success.isFailure(); // => false
 
 //Failure
-const failure = Try.failure(new Error('An error occurred')).run().isFailure(); // => true
+const failure = await Try.failure(new Error('An error occurred')).run();
+failure.isFailure(); // => true
 ```
 
 <br>
@@ -493,12 +507,12 @@ Runs the function no matter the internal state (success or failure).
 ```typescript
 //Success
 let v_success;
-const success = Try.of(() => 5).andFinally(()=>{v_success = 10}); // => will set the value of v to 10
+const success = await Try.of(() => 5).andFinally(()=>{v_success = 10}).run(); // => will set the value of v to 10
 
 
 //Failure
 let v_failure;
-const failure = Try.failure(new Error("5")).andFinally(()=>{v_failure = 10}); // => will set the value of v to 10, despite being a failure
+const failure = await Try.failure(new Error("5")).andFinally(()=>{v_failure = 10}).run(); // => will set the value of v to 10, despite being a failure
 ```
 
 
@@ -509,12 +523,12 @@ Runs the function no matter the internal state (success or failure).
 ```typescript
 //Success
 let v_success;
-const success = Try.of(() => 5).andFinallyTry(()=>Try.of(() => {v_success = 10})); // => will set the value of v to 10
+const success = await Try.of(() => 5).andFinallyTry(()=>Try.of(() => {v_success = 10})).run(); // => will set the value of v to 10
 
 
 //Failure
 let v_failure;
-const failure = Try.failure(new Error("5")).andFinallyTry(()=>Try.of(() => {v_failure = 10})); // => will set the value of v to 10, despite being a failure
+const failure = await Try.failure(new Error("5")).andFinallyTry(()=>Try.of(() => {v_failure = 10})).run(); // => will set the value of v to 10, despite being a failure
 ```
 
 
@@ -631,7 +645,6 @@ const value = await Try.success(10)
         .onSuccess(v => console.log(v)) // => Will print 10
         .get(); // => 10
         
-        
 //Failure
 const failure = await Try.failure(new Error('An error occurred'))
         .onSuccess(v => console.log(v)) // => Will not print
@@ -641,20 +654,22 @@ const failure = await Try.failure(new Error('An error occurred'))
 <br>
 
 ### `getCause(): Error | undefined`
-Returns the error of the Try instance if it is a Failure, otherwise returns undefined.
+Returns the error of the Try instance if it is a Failure, otherwise returns undefined. **Note: This method requires the Try to be executed first using `run()` or `get()` to determine the actual state.**
 ```typescript
 //Success
-const value = (await Try.success(10).run()).getCause(); // => undefined
+const success = await Try.success(10).run();
+success.getCause(); // => undefined
 
 //Failure
-const failure = Try.failure(new Error('An error occurred')).getCause(); // => Error('An error occurred')
+const failure = await Try.failure(new Error('An error occurred')).run();
+failure.getCause(); // => Error('An error occurred')
 ```
 
 
 <br>
 
 ### `peek(func: (value: T) => Promise<any> | any): Try<T>`
-Peeks the value of the Try instance if it is a Success, otherwise returns the Failure instance.
+Performs a side-effect with the value inside the Try if it is a Success, otherwise returns the Failure instance. This is equivalent to `andThen`.
 ```typescript
 //Success
 const value = await Try.success(10)

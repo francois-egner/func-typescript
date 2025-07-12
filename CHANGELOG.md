@@ -1,3 +1,8 @@
+## [2.0.0] - 2025-07-12
+### Modified
+- (BREAKING!) `sequence` will resolve all provided Try instances in parallel by default. It can be changed to be resolved sequentially by passing `false` as the second parameter
+- (BREAKING!) `combine` will resolve all provided Try instances in parallel by default. It can be changed to be resolved sequentially by passing `false` as the last parameter
+
 ## [1.5.0] - 2025-06-16
 ### Modified
 - `get`, `getOrElse`, `getOrElseGet`, `getOrElseThrow` will no longer rerun the entire steps chain and return the latest/cached result
