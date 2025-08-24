@@ -85,7 +85,45 @@ maybeUser
   .getOrElse('Default user')
 ```
 
-## API Documentation
+## Table of Contents
+
+- Getting Started
+- Quickstart
+- Core Concepts
+  - Lazy execution (run/get)
+  - Success vs Failure
+  - Option and Nullable
+- API Reference
+  - Try
+  - Option
+- Cheat Sheet
+
+## Quickstart
+
+```typescript
+import { Try, Option } from 'func-typescript';
+
+const apiCall = async (id: string) => {
+  if (id === '123') return { id, name: 'Alice' };
+  throw new Error('User not found');
+};
+
+const userName = await Try.of(() => apiCall('123'))
+  .map(u => u.name)
+  .get(); // 'Alice'
+
+const fallback = await Try.of(() => apiCall('404'))
+  .recover(() => ({ id: '404', name: 'Guest' }))
+  .get(); // { id: '404', name: 'Guest' }
+```
+
+## Core Concepts
+
+- Lazy execution: Chains are only evaluated on `get()` or `run()`.
+- Success vs Failure: `Try` captures values or errors; no thrown exceptions leak.
+- Option: Represents possibly missing values without null checks.
+
+## API Reference
 
 ### Try
 ## Initialization functions
@@ -214,7 +252,7 @@ await tryInstance.run(); // => Will run all the functions in the chain without r
 Gets the value of the Try instance. If the Try instance is a Failure, it will throw the error.<br> **Due to the nature of this library and potential asynchronous methods passed to transformation methods,
 it is necessary to await the result of this function.**
 ```typescript
-//Sucess
+//Success
 const value = await Try.success(10).get(); // => 10
 
 //Failure
@@ -228,14 +266,14 @@ Runs the Try instance and returns the Try instance itself. This is executing a T
 **Due to the nature of this library and potential asynchronous operations passed to transformation methods, it is necessary to await the result of this function.**
 ```typescript
 //Success
-const sucess = await Try.success(10).run(); // => Try instance with calculated value 10
+const success = await Try.success(10).run(); // => Try instance with calculated value 10
 
 //Failure
 const failure = await Try.failure(new Error('An error occurred')).run(); // => Try instance with error 'An error occurred'
 
 //Useful case
 await Try.success(1)
-        .filter(v => v > 2, v => { throw new Error("Custom Predicate does not hold for " + v)})
+        .filter(v => v > 2, v => { throw new Error("Custom predicate does not hold for " + v)})
         .run(); //Will throw the custom error
 ```
 
@@ -381,7 +419,7 @@ const failure = await Try.failure(new Error('An error occurred'))
 <br>
 
 ### `mapFailure(func: (ex: Error) => Error | Promise<Error>): Try<T>`
-Maps a failure of the Try instance if it is a Failure, otherwise returns the Success instance.
+Maps a failure of the Try instance when it is a Failure; otherwise returns the original Success.
 ```typescript
 class CustomException extends Error {
   constructor(message: string) {
@@ -398,17 +436,24 @@ class MappedCustomException extends Error {
     this.name = "MappedCustomException";
   }
 }
+const tryMapped = Try.failure(new CustomException("This is a test!"))
+    .mapFailure(async (ex)=> new MappedCustomException("Mapped Custom Exception", ex.message));
 
-
-  const result = Try.failure(new CustomException("This is a test!"))
-          .mapFailure(async (_)=> new MappedCustomException("Mapped Custom Exception", "Custom Exception"))
-});
+// Will throw MappedCustomException
+await tryMapped.get();
 ```
 
 <br>
 
-### `mapFailureWith<E extends Error, U extends Error>(errorType: new (...args: any[]) => E, func: (ex: E) => U | Promise<U>): Try<T>`
-Maps a failure of the Try instance if it is a specific error type using a function provided with the previous error if it is a Failure, otherwise returns the Success instance.
+### `mapFailureWith` – map failures by specific error type or via a handler map
+
+Overloads:
+
+1) `mapFailureWith<E extends Error, U extends Error>(errorClass: new (...args: any[]) => E, handler: (ex: E) => U | Promise<U>): Try<T>`
+
+2) `mapFailureWith(handlers: { [errorName: string]: (ex: Error) => Error | Promise<Error> }): Try<T>`
+
+Maps a failure when it matches a specific error class (overload 1) or when the failure's error name matches a key in the provided handler map (overload 2). When no match is found, the original failure is preserved.
 ```typescript
 class CustomException extends Error {
   constructor(message: string) {
@@ -427,12 +472,33 @@ class MappedCustomException extends Error {
 }
 
 
-const result = Try.failure(new CustomException("This is a test!"))
-        .mapFailureWith(CustomException, async (err) => {
-          return new MappedCustomException("Mapped Custom Exception", err.message);
-        });
-await expect(result.get()).rejects.toThrow(MappedCustomException);
-expect(result.isSuccess()).toBe(false);
+// Overload 1: class + handler
+const resultClass = Try.failure(new CustomException("This is a test!"))
+  .mapFailureWith(CustomException, async (err) => new MappedCustomException("Mapped Custom Exception", err.message));
+
+await resultClass.get(); // throws MappedCustomException
+
+// Overload 2: handler map keyed by error names
+const resultMap = Try.failure(new CustomException("This is a test!"))
+  .mapFailureWith({
+    CustomException: (err) => new MappedCustomException("Mapped Custom Exception", err.message),
+    Error: (err) => new Error("Generic mapped error: " + err.message)
+  });
+
+await resultMap.get(); // throws MappedCustomException
+
+// Practical mixed example: map different failures differently
+class NotFoundError extends Error { name = 'NotFoundError'; }
+class ValidationError extends Error { name = 'ValidationError'; }
+
+const value = await Try.of(async () => {
+  throw new ValidationError('email is invalid');
+})
+.mapFailureWith({
+  NotFoundError: () => new Error('Resource not found (mapped)'),
+  ValidationError: (ex) => new Error('Validation failed: ' + ex.message),
+})
+.get(); // throws Error('Validation failed: email is invalid')
 
 ```
 
@@ -536,14 +602,14 @@ const failure = await Try.failure(new Error("5")).andFinallyTry(()=>Try.of(() =>
 
 
 ### `filter(predicateFunc: (value: T) => boolean | Promise<boolean>, errorProvider?: (value: T) => Error): Try<T>`
-Will throw default or custom Error if predicate is true.
+Fails when predicate is true; optionally map to a custom error.
 ```typescript
 //Failure
 const value = await Try.success(10)
         .filter(v => v > 5)
         .get(); // => Will throw 'Predicate does not hold for 10'
         
-//Sucess
+//Success
 const failure = await Try.success(10)
         .filter(v => v > 15)
         .get(); // => 10
@@ -557,14 +623,14 @@ const failureWithCustomError = await Try.success(10)
 <br>
 
 ### `filterTry(predicateFunc: (value: T) => Try<boolean> | Promise<Try<boolean>>, errorProvider?: (value: T) => Error): Try<T>`
-Will throw default or custom Error if predicate is true.
+Like `filter`, but the predicate itself returns a Try.
 ```typescript
 //Failure
 const value = await Try.success(10)
         .filter(v => Try.success(v > 5))
         .get(); // => Will throw 'Predicate does not hold for 10'
         
-//Sucess
+//Success
 const failure = await Try.success(10)
         .filter(v => Try.success(v > 15))
         .get(); // => 10
@@ -579,7 +645,7 @@ const failureWithCustomError = await Try.success(10)
 <br>
 
 ### `filterNot(predicateFunc: (value: T) => boolean | Promise<boolean>, errorProvider?: (value: T) => Error): Try<T>`
-Will throw default or custom Error if predicate is false.
+Fails when predicate is false; optionally map to a custom error.
 ```typescript
 //Failure
 const value = await Try.success(10)
@@ -600,7 +666,7 @@ const failureWithCustomException = await Try.success(10)
 <br>
 
 ### `filterNotTry(predicateFunc: (value: T) => Try<boolean> | Promise<Try<boolean>>, errorProvider?: (value: T) => Error): Try<T>`
-Will throw default or custom Error if predicate is false.
+Like `filterNot`, but the predicate itself returns a Try.
 ```typescript
 //Failure
 const value = await Try.success(10)
@@ -682,11 +748,11 @@ const failure = await Try.failure(new Error('An error occurred'))
         .get(); // => Will throw 'An error occurred'
 ```
 
-## Option Class
+## Option
 
 The `Option` class is designed to handle optional values in a type-safe and functional way. It represents a value that may or may not be present, allowing you to work with potentially missing values without the risk of `null` or `undefined` errors. The class provides a series of methods to safely manipulate and transform these values.
 
-### Initialization Functions
+### Initialization
 
 #### `some<U>(value: U): Option<U>`
 Creates an Option instance that contains a non-null value.
@@ -724,7 +790,7 @@ const value = Option.when(true, 10); // Option<number> containing 10
 const none = Option.when(false, 10); // Option<Nullable> representing no value
 ```
 
-### Execution Functions
+### Execution
 
 #### `run(): Promise<Option<T>>`
 Executes the computation chain of this Option. This method triggers the execution of the entire sequence of operations that have been accumulated through prior method calls.

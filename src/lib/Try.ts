@@ -196,20 +196,45 @@ export class Try<T> {
 
 
     /**
-     * Transforms a failure inside the `Try` if it matches the specified error type.
+     * Transforms a failure inside the `Try` based on a mapping of error types to handler functions.
      *
-     * If this `Try` is a `Failure` and the error is an instance of `errorType`, the provided function is applied to transform the error.
-     * The transformed error is then wrapped in a new `Failure`.
-     * If this `Try` is a `Success` or the error does not match `errorType`, the original value or failure is returned unchanged.
+     * If this `Try` is a `Failure`, the error's constructor name is used to look up a handler function in the provided map.
+     * If a matching handler is found, it is applied to transform the error into a new error.
+     * If this `Try` is a `Success` or no matching handler is found, the original value or failure is returned unchanged.
      *
-     * @template E The specific error type to match and transform.
-     * @template U The type of the transformed error.
-     * @param {new (...args: any[]) => E} errorType The constructor of the error type to check against.
-     * @param {(ex: E) => U | Promise<U>} func A function to transform the error if it matches `errorType`.
+     * @template T The type of the successful result.
+     * @param {{ [key: string]: (ex: Error) => Error | Promise<Error> }} errorHandlers An object mapping error constructor names to handler functions.
      * @returns {Try<T>} A new `Try` instance with either the transformed failure, the original failure, or the success.
      */
-    public mapFailureWith<E extends Error, U extends Error>(errorType: new (...args: any[]) => E, func: (ex: E) => U | Promise<U>): Try<T>{
-        return new Try([...this.$internal.steps, (prev: Result)=> mapFailureWith(prev, errorType, func)])
+    public mapFailureWith(errorHandlers: { [key: string]: (ex: Error) => Error | Promise<Error> }): Try<T>;
+    
+    /**
+     * Transforms a failure inside the `Try` if it matches a specific error class, using the provided handler.
+     *
+     * - Only applies when this `Try` is a `Failure` and the error is an instance of `errorClass`.
+     * - The `handler` receives the typed error instance and must return another `Error` (or a Promise of it).
+     * - If the error does not match `errorClass`, the original failure is returned unchanged.
+     *
+     * @template U The specific `Error` subtype to match.
+     * @template V The `Error` type returned by the handler.
+     * @param {new (...args: any[]) => U} errorClass The error class to match against the failure's cause.
+     * @param {(ex: U) => V | Promise<V>} handler A function that maps the matched error to a new error.
+     * @returns {Try<T>} A new `Try` instance that maps the failure when it matches `errorClass`.
+     */
+    public mapFailureWith<U extends Error, V extends Error>(errorClass: new (...args: any[]) => U, handler: (ex: U) => V | Promise<V>): Try<T>;
+    public mapFailureWith(
+        errorHandlersOrClass: { [key: string]: (ex: Error) => Error | Promise<Error> } | (new (...args: any[]) => Error),
+        handler?: (ex: Error) => Error | Promise<Error>
+    ): Try<T> {
+        let errorHandlers: { [key: string]: (ex: Error) => Error | Promise<Error> } = {};
+        
+        if(typeof errorHandlersOrClass === 'function' && handler){
+            errorHandlers[errorHandlersOrClass.name] = handler;
+        }else{
+            errorHandlers = errorHandlersOrClass as { [key: string]: (ex: Error) => Error | Promise<Error> };
+        }
+        
+        return new Try([...this.$internal.steps, (prev: Result) => mapFailureWith(prev, errorHandlers)])
     }
 
 

@@ -1,6 +1,7 @@
 import {Try} from "../../../Try";
 import {runSteps} from "../helpers";
 
+/** Execute the Try and return its value; throw the error when failed. */
 export async function get(tryObject: Try<unknown>){
     if(tryObject.$internal.isComputed){
         if(tryObject.$internal.finalResult?.isError())

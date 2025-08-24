@@ -3,6 +3,7 @@ import {NoSuchElementException} from "../exceptions/NoSuchElementException";
 
 describe("Try", () => {
 
+
     describe("Try.success", () => {
         test("Try.success should create a Success instance", async () => {
             const result = Try.success("test");
@@ -258,6 +259,17 @@ describe("Try", () => {
             await expect(result.get()).rejects.toThrow(MappedCustomException);
             expect(result.isSuccess()).toBe(false);
         });
+
+        test("Try.mapFailureWith should map an instance of CustomException to MappedCustomException using mapping object", async () => {
+            const map = {
+                CustomException: (err: Error) => new MappedCustomException("Mapped Custom Exception", err.message)
+            }
+            const result = Try.failure(new CustomException("This is a test!"))
+                .mapFailureWith(map);
+
+             await expect(result.get()).rejects.toThrow(MappedCustomException);
+             expect(result.isSuccess()).toBe(false);
+         });
 
         test("Try.mapFailureWith should not map an instance of CustomException to MappedCustomException", async () => {
             const result = Try.failure(new CustomException("This is a test!"))

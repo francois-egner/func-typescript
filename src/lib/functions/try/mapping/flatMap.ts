@@ -3,6 +3,7 @@ import {Try} from "../../../Try";
 import {runInTry} from "../helpers";
 
 
+/** Map the value to a Try and flatten its result; propagate failures unchanged. */
 export async function flatMap(prev: Result, func: (value: any) => Try<any> | Promise<Try<any>>): Promise<Result>{
     if(prev.isError())
         return prev;
