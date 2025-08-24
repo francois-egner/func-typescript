@@ -1,17 +1,30 @@
 import {Result} from "../../../Result";
 import {runInTry} from "../helpers";
 
+/**
+ * Maps the error in a failure Result using a handler map keyed by error name.
+ *
+ * If `prev` holds an error, this checks for a handler whose key matches
+ * the error's constructor name and replaces the error with the handler's result.
+ * When no handler matches or when `prev` is not an error, `prev` is returned unchanged.
+ */
+type ErrorHandlerMap = {
+    [key: string]: (ex: Error) => Error | Promise<Error>;
+};
 
-export async function mapFailureWith<E extends Error, U extends Error>(prev: Result, errorType: new (...args: any[]) => E, func: (ex: E) => U | Promise<U>): Promise<Result>{
+export async function mapFailureWith(prev: Result, errorHandlers: ErrorHandlerMap): Promise<Result> {
     if(!prev.isError())
         return prev;
 
-    await runInTry(async () => {
-        if (errorType.name === prev.getError()!.name)
-            // @ts-ignore
-            return prev.setError(await func(prev.getError()!));
+    const error = prev.getError()!;
+    const errorName = error.constructor.name;
 
-    }, prev);
+    if (errorHandlers[errorName]) {
+        await runInTry(async () => {
+            // @ts-ignore
+            return prev.setError(await errorHandlers[errorName](error));
+        }, prev);
+    }
 
     return prev;
 }

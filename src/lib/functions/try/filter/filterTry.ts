@@ -4,6 +4,7 @@ import {runInTry} from "../helpers";
 import { Try } from "../../../Try";
 
 
+/** Like filter, but the predicate returns a Try<boolean>. */
 export async function filterTry<T>(prev: Result, predicate: (value: T) => Try<boolean> | Promise<Try<boolean>>, func?: (v: T) => Promise<Error> | Error): Promise<Result>{
     await runInTry(async ()=>{
         if(prev.isError() || !await (await predicate(prev.getValue())).get())

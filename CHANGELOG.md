@@ -1,3 +1,11 @@
+## [2.1.0]
+### Added
+- `Try.mapFailureWith` overload for passing a handler mapping object based on the Error class
+- Documentation for a lot of internal functions
+- 
+### Fixed
+- Improved README functions documentation
+
 ## [2.0.0] - 2025-07-12
 ### Modified
 - (BREAKING!) `sequence` will resolve all provided Try instances in parallel by default. It can be changed to be resolved sequentially by passing `false` as the second parameter

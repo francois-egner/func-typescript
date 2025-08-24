@@ -4,6 +4,10 @@ import {runInTry} from "../helpers";
 
 
 
+/**
+ * Combine values from multiple Try instances and apply a function when all succeed.
+ * Optional last boolean controls parallel (true, default) vs sequential (false) evaluation.
+ */
 export async function combine<T extends any[], R>(...args: [...{ [K in keyof T]: Try<T[K]> }, (...values: T) => R]): Promise<Result>;
 export async function combine<T extends any[], R>(...args: [...{ [K in keyof T]: Try<T[K]> }, (...values: T) => R, boolean]): Promise<Result>;
 export async function combine<T extends any[], R>(...args: any[]): Promise<Result>{

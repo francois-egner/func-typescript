@@ -2,6 +2,7 @@ import {Result} from "../../../Result";
 import {Try} from "../../../Try";
 import {runInTry} from "../helpers";
 
+/** Conditionally flatMap the value to a Try when predicate is true; propagate failures unchanged. */
 export async function flatMapIf(prev: Result, predicate: (v: any) => Promise<boolean> | boolean, func: (value: any) => Try<any> | Promise<Try<any>>): Promise<Result>{
     await runInTry(async ()=>{
         if(prev.isError() || !(await predicate(prev.getValue())))
