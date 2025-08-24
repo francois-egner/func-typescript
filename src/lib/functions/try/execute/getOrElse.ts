@@ -1,6 +1,7 @@
 import {Try} from "../../../Try";
 import {runSteps} from "../helpers";
 
+/** Execute and return value or fallback when failed. */
 export async function getOrElse(tryObject: Try<unknown>, fallbackValue: any){
     if(tryObject.$internal.isComputed){
         if(tryObject.$internal.finalResult?.isError())

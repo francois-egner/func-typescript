@@ -3,7 +3,8 @@
  *
  * This custom error class extends the built-in `Error` class and provides a specific error type,
  * `NoSuchElementException`, to indicate that a required element could not be found.
- * It will be thrown if the `filter` functions predicate is true and no other Exception as a result is being provided.
+ * It is used by Option/Try operations that require a value but none is present (e.g. `Option.get()`)
+ * or by filter operations when no custom error is supplied.
  *
  * @extends {Error}
  */

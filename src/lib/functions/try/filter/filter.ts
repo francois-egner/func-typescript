@@ -3,6 +3,7 @@ import {NoSuchElementException} from "../../../../exceptions/NoSuchElementExcept
 import {runInTry} from "../helpers";
 
 
+/** Fail when predicate is true; optionally produce a custom error, else NoSuchElementException. */
 export async function filter<T>(prev: Result, predicate: (value: T) => boolean | Promise<boolean>, func?: (v: T) => Promise<Error> | Error): Promise<Result>{
     await runInTry(async ()=>{
         if(prev.isError() || !(await predicate(prev.getValue())))
