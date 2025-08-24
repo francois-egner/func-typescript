@@ -2,7 +2,7 @@
 ### Added
 - `Try.mapFailureWith` overload for passing a handler mapping object based on the Error class
 - Documentation for a lot of internal functions
-
+- 
 ### Fixed
 - Improved README functions documentation
 

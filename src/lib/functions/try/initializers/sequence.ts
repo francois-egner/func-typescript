@@ -4,6 +4,7 @@ import {runInTry} from "../helpers";
 
 
 
+
 /**
  * Execute multiple Try instances and collect their successful values into an array.
  * When any Try fails, returns a failure Result.
